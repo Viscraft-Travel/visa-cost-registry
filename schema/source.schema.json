@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Viscraft-Travel/visa-cost-registry/schema/source.schema.json",
+  "title": "Source",
+  "description": "A single official page monitored for change. Must resolve to the version an applicant in India sees -- applicant_country is always IN.",
+  "type": "object",
+  "required": [
+    "iso_code", "url", "applicant_country", "language", "what_it_covers",
+    "check_method", "canary", "owner"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "iso_code": { "type": "string", "pattern": "^[a-z]{2}$" },
+    "url": { "type": "string", "format": "uri" },
+    "applicant_country": { "const": "IN" },
+    "language": { "type": "string" },
+    "what_it_covers": {
+      "type": "string",
+      "enum": ["fees", "documents", "processing", "appointment"]
+    },
+    "check_method": { "type": "string", "enum": ["hash", "human_only"] },
+    "canary": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "canary_must_not_contain": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "last_checked": { "type": ["string", "null"], "format": "date" },
+    "last_changed": { "type": ["string", "null"], "format": "date" },
+    "last_seen_snippet": { "type": ["string", "null"] },
+    "owner": { "type": "string", "minLength": 1 }
+  },
+  "allOf": [
+    {
+      "$comment": "A VFS Global URL must be on the India applicant path.",
+      "if": {
+        "properties": { "url": { "type": "string", "pattern": "vfsglobal\\.com" } },
+        "required": ["url"]
+      },
+      "then": {
+        "properties": { "url": { "type": "string", "pattern": "/ind/" } }
+      }
+    },
+    {
+      "$comment": "A BLS International URL must be on an India subdomain or path.",
+      "if": {
+        "properties": { "url": { "type": "string", "pattern": "blsinternational\\.com" } },
+        "required": ["url"]
+      },
+      "then": {
+        "properties": { "url": { "type": "string", "pattern": "[Ii][Nn][Dd][Ii][Aa]" } }
+      }
+    },
+    {
+      "$comment": "VFS and BLS run bot protection -- these must always be human_only, never automated hash-checking.",
+      "if": {
+        "properties": { "url": { "type": "string", "pattern": "vfsglobal\\.com|blsinternational\\.com" } },
+        "required": ["url"]
+      },
+      "then": {
+        "properties": { "check_method": { "type": "string", "const": "human_only" } }
+      }
+    }
+  ]
+}

@@ -6,11 +6,13 @@ import {
   listDestinationFiles,
   listRulesetFiles,
   loadFx,
+  loadSources,
   resolveDestination,
   type Destination,
   type ResolvedDestination,
   type Ruleset,
   type Fee,
+  type Source,
 } from "./resolve.js";
 
 // ajv and ajv-formats ship CJS with no ESM default export, which trips up
@@ -56,9 +58,11 @@ async function main() {
   const destinationSchema = loadSchema("destination.schema.json");
   const rulesetSchema = loadSchema("ruleset.schema.json");
   const fxSchema = loadSchema("fx.schema.json");
+  const sourceSchema = loadSchema("source.schema.json");
   const validateDestination = ajv.compile(destinationSchema);
   const validateRuleset = ajv.compile(rulesetSchema);
   const validateFx = ajv.compile(fxSchema);
+  const validateSource = ajv.compile(sourceSchema);
 
   const errors: ValidationError[] = [];
   const today = new Date();
@@ -162,6 +166,35 @@ async function main() {
             message: `fee '${fee.id}': currency '${fee.currency}' not found in data/fx.yaml`,
           });
         }
+      }
+    }
+  }
+
+  // 3. Validate sources.yaml, if it exists yet.
+  const sources: Source[] | null = loadSources();
+  if (!sources) {
+    console.warn("[validate] data/sources.yaml not found yet -- skipping source checks.");
+  } else {
+    const GENERIC_CANARY_TERMS = new Set(["india"]);
+    for (const source of sources) {
+      const label = "data/sources.yaml";
+      const sourceIsoCode = source.iso_code;
+      if (!validateSource(source)) {
+        for (const e of validateSource.errors ?? []) {
+          errors.push({ file: label, message: `source '${sourceIsoCode}': ${e.instancePath || "/"} ${e.message}` });
+        }
+      }
+      if (sourceIsoCode && !seenIsoCodes.has(sourceIsoCode)) {
+        errors.push({ file: label, message: `source '${sourceIsoCode}': no matching destination file` });
+      }
+      const meaningfulCanaries = (source.canary ?? []).filter(
+        (c) => !GENERIC_CANARY_TERMS.has(c.trim().toLowerCase())
+      );
+      if ((source.canary ?? []).length === 0 || meaningfulCanaries.length === 0) {
+        errors.push({
+          file: label,
+          message: `source '${source.iso_code}': canary is empty or contains only generic terms like 'India'`,
+        });
       }
     }
   }

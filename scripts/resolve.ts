@@ -71,6 +71,21 @@ export interface FxData {
   rates: Record<string, number>;
 }
 
+export interface Source {
+  iso_code: string;
+  url: string;
+  applicant_country: "IN";
+  language: string;
+  what_it_covers: "fees" | "documents" | "processing" | "appointment";
+  check_method: "hash" | "human_only";
+  canary: string[];
+  canary_must_not_contain?: string[];
+  last_checked: string | null;
+  last_changed: string | null;
+  last_seen_snippet: string | null;
+  owner: string;
+}
+
 const DATA_DIR = path.resolve(process.cwd(), "data");
 
 export function loadYaml<T>(filePath: string): T {
@@ -105,6 +120,13 @@ export function loadFx(): FxData | null {
   const fxPath = path.join(DATA_DIR, "fx.yaml");
   if (!fs.existsSync(fxPath)) return null;
   return loadYaml<FxData>(fxPath);
+}
+
+export function loadSources(): Source[] | null {
+  const sourcesPath = path.join(DATA_DIR, "sources.yaml");
+  if (!fs.existsSync(sourcesPath)) return null;
+  const doc = loadYaml<{ sources: Source[] }>(sourcesPath);
+  return doc.sources;
 }
 
 /**

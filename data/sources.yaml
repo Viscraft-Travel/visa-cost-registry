@@ -1,0 +1,48 @@
+# Only two entries so far, matching the two destinations that already have
+# a disclosed source_url (fr.yaml, jp.yaml from build step 1). The other 35
+# destinations are structure-only (build step 4) with no source_url yet --
+# adding a sources.yaml entry ahead of a real, human-confirmed URL would
+# mean check-sources.ts monitoring a guess. Add an entry here only once a
+# destination's actual official page has been identified.
+#
+# Both entries below are marked human_only: the France fetch (vfsglobal.com)
+# returned 403 as expected per the VFS/BLS bot-protection rule; the Japan
+# fetch (an embassy site, not VFS/BLS) also returned 403 when tried, so per
+# "If a source is unreachable, mark it human_only" it gets the same
+# treatment even though it isn't one of the two named bot-protected
+# operators.
+
+sources:
+  - iso_code: fr
+    url: https://visa.vfsglobal.com/ind/en/fra/
+    applicant_country: IN
+    language: en
+    what_it_covers: fees
+    check_method: human_only
+    canary:
+      - France
+      - "₹"
+    canary_must_not_contain:
+      - Germany
+      - Italy
+    last_checked: null
+    last_changed: null
+    last_seen_snippet: null
+    owner: TBD
+
+  - iso_code: jp
+    url: https://www.in.emb-japan.go.jp/itpr_en/visa.html
+    applicant_country: IN
+    language: en
+    what_it_covers: fees
+    check_method: human_only
+    canary:
+      - Japan
+      - "₹"
+    canary_must_not_contain:
+      - China
+      - Korea
+    last_checked: null
+    last_changed: null
+    last_seen_snippet: null
+    owner: TBD
