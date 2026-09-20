@@ -1,0 +1,47 @@
+name: Export on merge
+
+on:
+  push:
+    branches: [main]
+    # This workflow commits back to main (see below), which would be an
+    # infinite loop on an ordinary push -- but GitHub suppresses further
+    # workflow triggers from a commit made with the default GITHUB_TOKEN,
+    # so this is safe as long as the commit step below never authenticates
+    # with a different token/PAT.
+    #
+    # Side effect of that same suppression: fetch-fx.yml's GITHUB_TOKEN
+    # commit to data/fx.yaml does NOT trigger this workflow either, so an
+    # fx.yaml-only rate update won't refresh fx_derived figures in
+    # docs/export/ until the next unrelated push. Harmless today (nothing
+    # uses fx_derived yet); revisit if that changes.
+
+permissions:
+  contents: write
+
+jobs:
+  export-csv:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Regenerate docs/export/ from the resolved data
+        run: npm run export-csv
+
+      - name: Commit docs/export/ if it changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/export/
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "chore: regenerate docs/export [automated]"
+            git push
+          fi

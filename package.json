@@ -9,7 +9,8 @@
     "fetch-fx": "tsx scripts/fetch-fx.ts",
     "check-sources": "tsx scripts/check-sources.ts",
     "bootstrap-issues": "tsx scripts/bootstrap-issues.ts",
-    "staleness-report": "tsx scripts/staleness-report.ts"
+    "staleness-report": "tsx scripts/staleness-report.ts",
+    "export-csv": "tsx scripts/export-csv.ts"
   },
   "dependencies": {
     "ajv": "^8.17.1",
