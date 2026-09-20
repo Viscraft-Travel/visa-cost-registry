@@ -1,0 +1,29 @@
+name: Staleness report weekly
+
+on:
+  schedule:
+    # Mondays, 06:30 IST = 01:00 UTC
+    - cron: "0 1 * * 1"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  staleness-report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Post/update the weekly staleness summary and any overdue manual-check notices
+        run: npm run staleness-report
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

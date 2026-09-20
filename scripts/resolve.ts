@@ -191,7 +191,7 @@ export function resolveDestination(destination: Destination, ruleset: Ruleset | 
   };
 }
 
-function daysSince(dateStr: string | null | undefined, now: Date): number | null {
+export function daysSince(dateStr: string | null | undefined, now: Date): number | null {
   if (!dateStr) return null;
   const then = new Date(dateStr);
   return Math.floor((now.getTime() - then.getTime()) / 86_400_000);
@@ -288,4 +288,25 @@ export function applyFamilyCap(perPersonAmount: number, travellerCount: number, 
   const cappedCount = Math.min(travellerCount, fee.family_max_persons ?? travellerCount);
   const raw = perPersonAmount * cappedCount;
   return fee.family_cap_amount !== null ? Math.min(raw, fee.family_cap_amount) : raw;
+}
+
+/**
+ * Recursively collects dotted paths of every null leaf value in a plain
+ * object -- used to build "what's still outstanding" checklists/counts
+ * (bootstrap-issues.ts, staleness-report.ts). Arrays are treated as leaves,
+ * never recursed into: an array is either present (fine) or would need a
+ * caller-specific meaning for "null" (e.g. an empty fees: [] isn't missing
+ * data the way a null field is), so this only walks plain nested objects.
+ */
+export function collectNullPaths(obj: Record<string, unknown>, prefix = ""): string[] {
+  const paths: string[] = [];
+  for (const [key, value] of Object.entries(obj)) {
+    const path = prefix ? `${prefix}.${key}` : key;
+    if (value === null) {
+      paths.push(path);
+    } else if (typeof value === "object" && value !== undefined && !Array.isArray(value)) {
+      paths.push(...collectNullPaths(value as Record<string, unknown>, path));
+    }
+  }
+  return paths;
 }

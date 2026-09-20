@@ -7,7 +7,9 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "fetch-fx": "tsx scripts/fetch-fx.ts",
-    "check-sources": "tsx scripts/check-sources.ts"
+    "check-sources": "tsx scripts/check-sources.ts",
+    "bootstrap-issues": "tsx scripts/bootstrap-issues.ts",
+    "staleness-report": "tsx scripts/staleness-report.ts"
   },
   "dependencies": {
     "ajv": "^8.17.1",
