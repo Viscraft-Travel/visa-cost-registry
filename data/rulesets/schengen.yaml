@@ -1,0 +1,88 @@
+id: schengen
+corridor: schengen
+description: >
+  Rules and fees common to all Schengen member states for an Indian
+  passport holder applying from India. Anything that varies by state
+  (VAC operator, service charges, centre cities, processing time, and the
+  official INR amount actually collected) lives on the destination file,
+  not here.
+
+fees:
+  - id: consular_fee_adult
+    label: Schengen visa fee, adult
+    amount: 90
+    currency: EUR
+    collection_basis: official_inr
+    collected_currency: INR
+    collected_amount: null
+    collected_amount_source_url: null
+    collected_amount_verified_on: null
+    basis: per_person
+    family_cap_amount: null
+    family_max_persons: null
+    applies_to: adult
+    visa_subtype: short_stay
+    mandatory: true
+    category: consular
+    source_url: null
+    verified_on: null
+    verified_by: null
+
+  - id: consular_fee_child_6_11
+    label: Schengen visa fee, child 6-11
+    amount: null
+    currency: EUR
+    collection_basis: official_inr
+    collected_currency: INR
+    collected_amount: null
+    collected_amount_source_url: null
+    collected_amount_verified_on: null
+    basis: per_person
+    family_cap_amount: null
+    family_max_persons: null
+    applies_to: child_6_11
+    visa_subtype: short_stay
+    mandatory: null
+    category: consular
+    source_url: null
+    verified_on: null
+    verified_by: null
+
+  - id: consular_fee_child_under_6
+    label: Schengen visa fee, child under 6
+    amount: null
+    currency: EUR
+    collection_basis: official_inr
+    collected_currency: INR
+    collected_amount: null
+    collected_amount_source_url: null
+    collected_amount_verified_on: null
+    basis: per_person
+    family_cap_amount: null
+    family_max_persons: null
+    applies_to: child_under_6
+    visa_subtype: short_stay
+    mandatory: null
+    category: consular
+    source_url: null
+    verified_on: null
+    verified_by: null
+
+requirements:
+  insurance_required: true
+  insurance_min_cover: 30000
+  insurance_currency: EUR
+
+rules:
+  main_destination_rule: >
+    Apply to the Schengen state that is the main destination — the one
+    where you spend the most nights, or (if nights are equal across more
+    than one state) the state of first entry into Schengen territory.
+  main_destination_rule_source_url: null
+  stay_limit_days: 90
+  stay_limit_period_days: 180
+  biometrics_validity_months: null
+
+meta:
+  last_reviewed: null
+  reviewed_by: null

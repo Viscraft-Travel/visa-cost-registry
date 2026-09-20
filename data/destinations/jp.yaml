@@ -1,0 +1,82 @@
+# Reference file — standalone destination (no ruleset). Contrasts with
+# fr.yaml: Japan's application mechanics for Indian applicants are less
+# uniformly documented than the Schengen VAC model, so nothing here is
+# asserted structurally — everything is null pending first verification.
+# The source_url below is the well-known www.<cc>.emb-japan.go.jp pattern
+# used across all Japanese embassy sites, but the fetch returned 403 and
+# was not confirmed live; the first verifier must open it directly.
+
+identity:
+  iso_code: jp
+  name: Japan
+  corridor: japan
+  ruleset: null
+  tier: light
+  owner: TBD
+
+application:
+  channel: null
+  vac_operator: null
+  vac_cities: null
+  jurisdiction_rule: null
+  interview_required: null
+  biometrics_required: null
+  biometrics_validity_months: null
+  agency_can_file: null
+
+fees:
+  - id: visa_fee
+    label: Japan visa fee, standard
+    amount: null
+    currency: null
+    collection_basis: null
+    collected_currency: null
+    collected_amount: null
+    collected_amount_source_url: null
+    collected_amount_verified_on: null
+    basis: null
+    family_cap_amount: null
+    family_max_persons: null
+    applies_to: all
+    visa_subtype: null
+    mandatory: null
+    category: consular
+    source_url: https://www.in.emb-japan.go.jp/itpr_en/visa.html
+    verified_on: null
+    verified_by: null
+
+timing:
+  appointment_lead_days_min: null
+  appointment_lead_days_max: null
+  processing_days_min: null
+  processing_days_max: null
+  earliest_application_days_before_travel: null
+  standard_runway_days: null
+  floor_days: null
+  peak_months: []
+
+requirements:
+  insurance_required: null
+  insurance_min_cover: null
+  insurance_currency: null
+  itinerary_required: null
+  accommodation_required: null
+  flight_reservation_required: null
+  financial_statement_months: null
+  itr_required: null
+  translation_required: null
+  apostille_required: null
+  photo_spec: null
+
+outcome:
+  refusal_rate_indian_applicants: null
+  refusal_rate_source: null
+  refusal_rate_as_at: null
+  common_refusal_grounds: []
+  appeal_available: null
+  reapplication_wait_days: null
+
+meta:
+  last_reviewed: null
+  reviewed_by: null
+  change_log: []

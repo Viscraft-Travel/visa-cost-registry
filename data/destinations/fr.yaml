@@ -1,0 +1,126 @@
+# Reference file — demonstrates ruleset inheritance + override.
+# Every applicant assumed: Indian passport, applying from India.
+# Fetches to visa.vfsglobal.com/ind/... returned 403 (bot-protected, as
+# expected — see sources.yaml's human_only rule). The /ind/en/fra/ URL
+# below follows the pattern the France VAC is known to use, but has not
+# been loaded live. First verifier must open it and correct the path if
+# the fee schedule lives at a deeper URL.
+
+identity:
+  iso_code: fr
+  name: France
+  corridor: schengen
+  ruleset: schengen
+  tier: heavy
+  owner: TBD
+
+application:
+  # channel/vac_operator/interview_required/biometrics_required are on the
+  # seed-data "structural, stable, well documented" exception list — France
+  # outsourcing to VFS and not requiring a separate interview for routine
+  # short-stay applications are long-standing, non-volatile facts. Cities
+  # and jurisdiction mapping are NOT on that list (VAC centres open/close)
+  # and are left null for first verification.
+  channel: vac
+  vac_operator: vfs
+  vac_cities: null
+  jurisdiction_rule: null
+  interview_required: "no"
+  biometrics_required: conditional # required unless valid biometrics already on file within the reuse window
+  biometrics_validity_months: null
+  agency_can_file: null
+
+fees:
+  # Override fragment: id matches the ruleset's consular_fee_adult.
+  # resolve.ts merges this on top of data/rulesets/schengen.yaml's entry —
+  # label, amount, currency, collection_basis, collected_currency, basis,
+  # applies_to, visa_subtype, mandatory and category are all inherited
+  # unchanged from the ruleset. Only the fields below are declared here.
+  # This fragment is intentionally NOT valid against schema/destination.schema.json
+  # on its own — only the RESOLVED (merged) record is schema-checked.
+  - id: consular_fee_adult
+    collected_amount: null
+    collected_amount_source_url: https://visa.vfsglobal.com/ind/en/fra/
+    collected_amount_verified_on: null
+    source_url: https://visa.vfsglobal.com/ind/en/fra/
+    verified_on: null
+    verified_by: null
+
+  # Destination-owned fee — VFS charges this locally in INR, no FX involved.
+  - id: vac_service_charge
+    label: VFS service charge
+    amount: null
+    currency: INR
+    collection_basis: native_inr
+    collected_currency: INR
+    collected_amount: null
+    collected_amount_source_url: null
+    collected_amount_verified_on: null
+    basis: per_person
+    family_cap_amount: null
+    family_max_persons: null
+    applies_to: all
+    visa_subtype: null
+    mandatory: true
+    category: vac
+    source_url: https://visa.vfsglobal.com/ind/en/fra/
+    verified_on: null
+    verified_by: null
+
+  # Optional VAC add-on — excluded from any quote total by export-csv.ts
+  # (category: optional), but still exported so it's visible to the client.
+  - id: sms_alert_service
+    label: SMS application status alerts
+    amount: null
+    currency: INR
+    collection_basis: native_inr
+    collected_currency: INR
+    collected_amount: null
+    collected_amount_source_url: null
+    collected_amount_verified_on: null
+    basis: per_person
+    family_cap_amount: null
+    family_max_persons: null
+    applies_to: all
+    visa_subtype: null
+    mandatory: false
+    category: optional
+    source_url: https://visa.vfsglobal.com/ind/en/fra/
+    verified_on: null
+    verified_by: null
+
+timing:
+  appointment_lead_days_min: null
+  appointment_lead_days_max: null
+  processing_days_min: null
+  processing_days_max: null
+  earliest_application_days_before_travel: null
+  standard_runway_days: null
+  floor_days: null
+  peak_months: []
+
+requirements:
+  insurance_required: true
+  insurance_min_cover: 30000
+  insurance_currency: EUR
+  itinerary_required: null
+  accommodation_required: null
+  flight_reservation_required: null
+  financial_statement_months: null
+  itr_required: null
+  translation_required: null
+  apostille_required: null
+  photo_spec: null
+
+outcome:
+  refusal_rate_indian_applicants: null
+  refusal_rate_source: null
+  refusal_rate_as_at: null
+  common_refusal_grounds: []
+  appeal_available: null
+  reapplication_wait_days: null
+
+meta:
+  last_reviewed: null
+  reviewed_by: null
+  change_log: []

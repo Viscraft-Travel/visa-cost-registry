@@ -1,0 +1,130 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Viscraft-Travel/visa-cost-registry/schema/ruleset.schema.json",
+  "title": "Ruleset",
+  "description": "Rules and fees shared across every destination in a corridor. Only genuinely common content belongs here — anything that varies by state (VAC operator, service charges, centre cities, processing time, the official INR amount collected) belongs on the destination file instead.",
+  "type": "object",
+  "required": ["id", "corridor", "fees", "requirements", "rules", "meta"],
+  "additionalProperties": false,
+  "$defs": {
+    "fee": {
+      "type": "object",
+      "required": [
+        "id", "label", "currency", "collection_basis", "collected_currency",
+        "basis", "applies_to", "mandatory", "category", "source_url"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+        "label": { "type": "string" },
+        "amount": { "type": ["number", "null"], "minimum": 0 },
+        "currency": { "type": ["string", "null"], "pattern": "^[A-Z]{3}$" },
+        "collection_basis": {
+          "type": ["string", "null"],
+          "enum": ["native_inr", "official_inr", "fx_derived", null]
+        },
+        "collected_currency": { "type": ["string", "null"], "pattern": "^[A-Z]{3}$" },
+        "collected_amount": { "type": ["number", "null"], "minimum": 0 },
+        "collected_amount_source_url": { "type": ["string", "null"], "format": "uri" },
+        "collected_amount_verified_on": { "type": ["string", "null"], "format": "date" },
+        "basis": {
+          "type": ["string", "null"],
+          "enum": ["per_person", "per_family", "per_file", null]
+        },
+        "family_cap_amount": { "type": ["number", "null"], "minimum": 0 },
+        "family_max_persons": { "type": ["integer", "null"], "minimum": 1 },
+        "applies_to": {
+          "type": ["string", "null"],
+          "enum": ["all", "adult", "child_6_11", "child_under_6", "senior", null]
+        },
+        "visa_subtype": {
+          "type": ["string", "null"],
+          "enum": ["single_entry", "multi_entry", "short_stay", null]
+        },
+        "mandatory": { "type": ["boolean", "null"] },
+        "category": {
+          "type": ["string", "null"],
+          "enum": ["consular", "vac", "biometric", "levy", "optional", "third_party", null]
+        },
+        "source_url": { "type": ["string", "null"], "format": "uri" },
+        "verified_on": { "type": ["string", "null"], "format": "date" },
+        "verified_by": { "type": ["string", "null"] }
+      },
+      "$comment": "Destination files may reference a fee by the same id and supply only the fields that differ (e.g. collected_amount) — resolve.ts merges field-by-field, ruleset as base. Same official_inr/per_family contradiction rules as destination.schema.json's fee $def apply here too.",
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "collection_basis": { "const": "official_inr" },
+              "collected_amount_verified_on": { "not": { "type": "null" } }
+            },
+            "required": ["collection_basis", "collected_amount_verified_on"]
+          },
+          "then": {
+            "properties": {
+              "collected_amount": { "not": { "type": "null" } }
+            },
+            "required": ["collected_amount"]
+          }
+        },
+        {
+          "if": {
+            "properties": { "basis": { "const": "per_family" } },
+            "required": ["basis"]
+          },
+          "then": {
+            "required": ["family_cap_amount", "family_max_persons"]
+          }
+        },
+        {
+          "if": {
+            "properties": { "verified_on": { "not": { "type": "null" } } },
+            "required": ["verified_on"]
+          },
+          "then": {
+            "properties": { "amount": { "not": { "type": "null" } } },
+            "required": ["amount"]
+          }
+        }
+      ]
+    }
+  },
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9_-]*$" },
+    "corridor": { "type": "string" },
+    "description": { "type": "string" },
+    "fees": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/fee" }
+    },
+    "requirements": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "insurance_required": { "type": ["boolean", "null"] },
+        "insurance_min_cover": { "type": ["number", "null"], "minimum": 0 },
+        "insurance_currency": { "type": ["string", "null"], "pattern": "^[A-Z]{3}$" }
+      }
+    },
+    "rules": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "main_destination_rule": { "type": ["string", "null"] },
+        "main_destination_rule_source_url": { "type": ["string", "null"], "format": "uri" },
+        "stay_limit_days": { "type": ["integer", "null"], "minimum": 0 },
+        "stay_limit_period_days": { "type": ["integer", "null"], "minimum": 0 },
+        "biometrics_validity_months": { "type": ["integer", "null"], "minimum": 0 }
+      }
+    },
+    "meta": {
+      "type": "object",
+      "required": ["last_reviewed", "reviewed_by"],
+      "additionalProperties": false,
+      "properties": {
+        "last_reviewed": { "type": ["string", "null"], "format": "date" },
+        "reviewed_by": { "type": ["string", "null"] }
+      }
+    }
+  }
+}

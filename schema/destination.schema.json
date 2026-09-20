@@ -1,0 +1,255 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Viscraft-Travel/visa-cost-registry/schema/destination.schema.json",
+  "title": "Destination",
+  "description": "One destination country's visa data. Applicant is always assumed to hold an Indian passport, applying from India. Null means not yet verified — never guess a value.",
+  "type": "object",
+  "required": ["identity", "application", "fees", "timing", "requirements", "outcome", "meta"],
+  "additionalProperties": false,
+  "$defs": {
+    "fee": {
+      "type": "object",
+      "required": [
+        "id", "label", "currency", "collection_basis", "collected_currency",
+        "basis", "applies_to", "mandatory", "category", "source_url"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+        "label": { "type": "string" },
+        "amount": { "type": ["number", "null"], "minimum": 0 },
+        "currency": { "type": ["string", "null"], "pattern": "^[A-Z]{3}$" },
+        "collection_basis": {
+          "type": ["string", "null"],
+          "enum": ["native_inr", "official_inr", "fx_derived", null]
+        },
+        "collected_currency": {
+          "type": ["string", "null"],
+          "pattern": "^[A-Z]{3}$"
+        },
+        "collected_amount": { "type": ["number", "null"], "minimum": 0 },
+        "collected_amount_source_url": { "type": ["string", "null"], "format": "uri" },
+        "collected_amount_verified_on": { "type": ["string", "null"], "format": "date" },
+        "basis": {
+          "type": ["string", "null"],
+          "enum": ["per_person", "per_family", "per_file", null]
+        },
+        "family_cap_amount": { "type": ["number", "null"], "minimum": 0 },
+        "family_max_persons": { "type": ["integer", "null"], "minimum": 1 },
+        "applies_to": {
+          "type": ["string", "null"],
+          "enum": ["all", "adult", "child_6_11", "child_under_6", "senior", null]
+        },
+        "visa_subtype": {
+          "type": ["string", "null"],
+          "enum": ["single_entry", "multi_entry", "short_stay", null]
+        },
+        "mandatory": { "type": ["boolean", "null"] },
+        "category": {
+          "type": ["string", "null"],
+          "enum": ["consular", "vac", "biometric", "levy", "optional", "third_party", null]
+        },
+        "source_url": { "type": ["string", "null"], "format": "uri" },
+        "verified_on": { "type": ["string", "null"], "format": "date" },
+        "verified_by": { "type": ["string", "null"] }
+      },
+      "$comment": "General principle (applies everywhere a value is paired with a verified_on-style timestamp): null + no verification timestamp = NOT YET KNOWN, valid, exports empty, chased by staleness-report.ts. null + a verification timestamp SET = CONTRADICTION (a verification that produced no number), invalid, blocks the PR. validate.ts must never fail on a plain unverified null — only on the contradiction case — or it would block every PR from day one against the deliberately all-null seed data.",
+      "allOf": [
+        {
+          "$comment": "official_inr: collected_amount null with collected_amount_verified_on also null is just unresolved (fine — resolve.ts exports empty, does not throw). collected_amount null with collected_amount_verified_on SET is a contradiction and must fail validation.",
+          "if": {
+            "properties": {
+              "collection_basis": { "const": "official_inr" },
+              "collected_amount_verified_on": { "not": { "type": "null" } }
+            },
+            "required": ["collection_basis", "collected_amount_verified_on"]
+          },
+          "then": {
+            "properties": {
+              "collected_amount": { "not": { "type": "null" } }
+            },
+            "required": ["collected_amount"]
+          }
+        },
+        {
+          "if": {
+            "properties": { "basis": { "const": "per_family" } },
+            "required": ["basis"]
+          },
+          "then": {
+            "required": ["family_cap_amount", "family_max_persons"]
+          }
+        },
+        {
+          "$comment": "Same general principle applied to amount/verified_on directly: a verified fee with no amount is a contradiction, regardless of collection_basis.",
+          "if": {
+            "properties": { "verified_on": { "not": { "type": "null" } } },
+            "required": ["verified_on"]
+          },
+          "then": {
+            "properties": { "amount": { "not": { "type": "null" } } },
+            "required": ["amount"]
+          }
+        }
+      ]
+    },
+    "changeLogEntry": {
+      "type": "object",
+      "required": ["date", "field", "old", "new", "by"],
+      "additionalProperties": false,
+      "properties": {
+        "date": { "type": "string", "format": "date" },
+        "field": { "type": "string" },
+        "old": {},
+        "new": {},
+        "by": { "type": "string" },
+        "note": { "type": "string" }
+      }
+    }
+  },
+  "properties": {
+    "identity": {
+      "type": "object",
+      "required": ["iso_code", "name", "corridor", "ruleset", "tier", "owner"],
+      "additionalProperties": false,
+      "properties": {
+        "iso_code": { "type": "string", "pattern": "^[a-z]{2}$" },
+        "name": { "type": "string" },
+        "corridor": { "type": ["string", "null"] },
+        "ruleset": { "type": ["string", "null"] },
+        "tier": { "type": ["string", "null"], "enum": ["light", "standard", "heavy", null] },
+        "owner": { "type": "string", "minLength": 1 }
+      }
+    },
+    "application": {
+      "type": "object",
+      "required": [
+        "channel", "vac_operator", "vac_cities", "jurisdiction_rule",
+        "interview_required", "biometrics_required", "biometrics_validity_months",
+        "agency_can_file"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "channel": {
+          "type": ["string", "null"],
+          "enum": ["vac", "online", "consulate", "accredited_agency", null]
+        },
+        "vac_operator": {
+          "type": ["string", "null"],
+          "enum": ["vfs", "bls", "tls", "gvcw", "cvasc", "none", "other", null]
+        },
+        "vac_cities": {
+          "type": ["array", "null"],
+          "items": { "type": "string" }
+        },
+        "jurisdiction_rule": { "type": ["string", "null"] },
+        "interview_required": {
+          "type": ["string", "null"],
+          "enum": ["yes", "no", "conditional", null]
+        },
+        "biometrics_required": {
+          "type": ["string", "null"],
+          "enum": ["yes", "no", "conditional", null]
+        },
+        "biometrics_validity_months": { "type": ["integer", "null"], "minimum": 0 },
+        "agency_can_file": {
+          "type": ["string", "null"],
+          "enum": ["yes", "no", "accreditation_required", null]
+        }
+      }
+    },
+    "fees": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/fee" }
+    },
+    "timing": {
+      "type": "object",
+      "required": [
+        "appointment_lead_days_min", "appointment_lead_days_max",
+        "processing_days_min", "processing_days_max",
+        "earliest_application_days_before_travel",
+        "standard_runway_days", "floor_days", "peak_months"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "appointment_lead_days_min": { "type": ["integer", "null"], "minimum": 0 },
+        "appointment_lead_days_max": { "type": ["integer", "null"], "minimum": 0 },
+        "processing_days_min": { "type": ["integer", "null"], "minimum": 0 },
+        "processing_days_max": { "type": ["integer", "null"], "minimum": 0 },
+        "earliest_application_days_before_travel": { "type": ["integer", "null"], "minimum": 0 },
+        "standard_runway_days": { "type": ["integer", "null"], "minimum": 0 },
+        "floor_days": { "type": ["integer", "null"], "minimum": 0 },
+        "peak_months": {
+          "type": "array",
+          "items": { "type": "integer", "minimum": 1, "maximum": 12 }
+        }
+      },
+      "$comment": "floor_days must be strictly less than standard_runway_days once both are known — JSON Schema can't compare two sibling numeric properties without a custom keyword, so this is enforced in validate.ts, not here."
+    },
+    "requirements": {
+      "type": "object",
+      "required": [
+        "insurance_required", "insurance_min_cover", "insurance_currency",
+        "itinerary_required", "accommodation_required", "flight_reservation_required",
+        "financial_statement_months", "itr_required",
+        "translation_required", "apostille_required", "photo_spec"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "insurance_required": { "type": ["boolean", "null"] },
+        "insurance_min_cover": { "type": ["number", "null"], "minimum": 0 },
+        "insurance_currency": { "type": ["string", "null"], "pattern": "^[A-Z]{3}$" },
+        "itinerary_required": { "type": ["boolean", "null"] },
+        "accommodation_required": { "type": ["boolean", "null"] },
+        "flight_reservation_required": { "type": ["boolean", "null"] },
+        "financial_statement_months": { "type": ["integer", "null"], "minimum": 0 },
+        "itr_required": { "type": ["boolean", "null"] },
+        "translation_required": { "type": ["boolean", "null"] },
+        "apostille_required": { "type": ["boolean", "null"] },
+        "photo_spec": { "type": ["string", "null"] }
+      }
+    },
+    "outcome": {
+      "type": "object",
+      "required": [
+        "refusal_rate_indian_applicants", "refusal_rate_source", "refusal_rate_as_at",
+        "common_refusal_grounds", "appeal_available", "reapplication_wait_days"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "refusal_rate_indian_applicants": { "type": ["number", "null"], "minimum": 0, "maximum": 100 },
+        "refusal_rate_source": { "type": ["string", "null"] },
+        "refusal_rate_as_at": { "type": ["string", "null"], "format": "date" },
+        "common_refusal_grounds": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "appeal_available": { "type": ["string", "null"], "enum": ["yes", "no", null] },
+        "reapplication_wait_days": { "type": ["integer", "null"], "minimum": 0 }
+      },
+      "$comment": "Same null+timestamp contradiction principle: an as-at date set with no rate is a contradiction.",
+      "if": {
+        "properties": { "refusal_rate_as_at": { "not": { "type": "null" } } },
+        "required": ["refusal_rate_as_at"]
+      },
+      "then": {
+        "properties": { "refusal_rate_indian_applicants": { "not": { "type": "null" } } },
+        "required": ["refusal_rate_indian_applicants"]
+      }
+    },
+    "meta": {
+      "type": "object",
+      "required": ["last_reviewed", "reviewed_by", "change_log"],
+      "additionalProperties": false,
+      "properties": {
+        "last_reviewed": { "type": ["string", "null"], "format": "date" },
+        "reviewed_by": { "type": ["string", "null"] },
+        "change_log": {
+          "type": "array",
+          "maxItems": 20,
+          "items": { "$ref": "#/$defs/changeLogEntry" }
+        }
+      }
+    }
+  }
+}
