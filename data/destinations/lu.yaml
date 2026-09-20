@@ -1,0 +1,55 @@
+# Structure-only seed file (build step 4). fees: [] is correct --
+# resolve.ts appends this destination's ruleset (schengen) fees
+# automatically, so the shared consular fees still apply at resolve
+# time without needing to be restated here. Everything destination-
+# specific (VAC operator, cities, service charges, timing) is null
+# pending first verification.
+identity:
+  iso_code: lu
+  name: Luxembourg
+  corridor: schengen
+  ruleset: schengen
+  tier: heavy
+  owner: TBD
+application:
+  channel: null
+  vac_operator: null
+  vac_cities: null
+  jurisdiction_rule: null
+  interview_required: null
+  biometrics_required: null
+  biometrics_validity_months: null
+  agency_can_file: null
+fees: []
+timing:
+  appointment_lead_days_min: null
+  appointment_lead_days_max: null
+  processing_days_min: null
+  processing_days_max: null
+  earliest_application_days_before_travel: null
+  standard_runway_days: null
+  floor_days: null
+  peak_months: []
+requirements:
+  insurance_required: null
+  insurance_min_cover: null
+  insurance_currency: null
+  itinerary_required: null
+  accommodation_required: null
+  flight_reservation_required: null
+  financial_statement_months: null
+  itr_required: null
+  translation_required: null
+  apostille_required: null
+  photo_spec: null
+outcome:
+  refusal_rate_indian_applicants: null
+  refusal_rate_source: null
+  refusal_rate_as_at: null
+  common_refusal_grounds: []
+  appeal_available: null
+  reapplication_wait_days: null
+meta:
+  last_reviewed: null
+  reviewed_by: null
+  change_log: []
