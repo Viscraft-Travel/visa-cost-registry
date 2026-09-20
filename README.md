@@ -84,7 +84,8 @@ is older than 7 days.
 Nothing downstream ever reads a raw destination or ruleset file directly —
 everything goes through `resolveDestination()` first. On every merge to
 `main`, `export-csv.ts` writes three files to `docs/export/`, published via
-GitHub Pages at `https://viscraft-travel.github.io/visa-cost-registry/`:
+GitHub Pages, published from `docs/`, so the files live under `/export/`:
+`https://viscraft-travel.github.io/visa-cost-registry/export/`.
 
 - **`fees.csv`** — one row per destination-fee (`iso_code`, `destination`,
   `corridor`, `fee_id`, `label`, `category`, `basis`, `applies_to`,
@@ -106,8 +107,8 @@ shift between runs.
 **Google Sheets** pulls the CSVs directly:
 
 ```
-=IMPORTDATA("https://viscraft-travel.github.io/visa-cost-registry/fees.csv")
-=IMPORTDATA("https://viscraft-travel.github.io/visa-cost-registry/destinations.csv")
+=IMPORTDATA("https://viscraft-travel.github.io/visa-cost-registry/export/fees.csv")
+=IMPORTDATA("https://viscraft-travel.github.io/visa-cost-registry/export/destinations.csv")
 ```
 
 **Framer**: investigated directly against Framer's plugin API — there's no
