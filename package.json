@@ -6,12 +6,14 @@
     "validate": "tsx scripts/validate.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "fetch-fx": "tsx scripts/fetch-fx.ts"
+    "fetch-fx": "tsx scripts/fetch-fx.ts",
+    "check-sources": "tsx scripts/check-sources.ts"
   },
   "dependencies": {
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
-    "js-yaml": "^4.1.0"
+    "js-yaml": "^4.1.0",
+    "node-html-parser": "^9.0.4"
   },
   "devDependencies": {
     "@types/js-yaml": "^4.0.9",

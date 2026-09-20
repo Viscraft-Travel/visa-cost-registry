@@ -1,0 +1,42 @@
+name: Source check daily
+
+on:
+  schedule:
+    # 07:00 IST = 01:30 UTC
+    - cron: "30 1 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check-sources:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # check-sources.ts never writes to the repo -- its hash/snippet cache
+      # (so it doesn't reopen the same [CHANGE] issue every day while a
+      # human is still working on it) lives here instead, via actions/cache,
+      # not a git commit. A cache key can only be written once, so this
+      # uses the standard rolling-key pattern: restore the most recent
+      # previous cache, save a new one under this run's own key every time.
+      - uses: actions/cache@v4
+        with:
+          path: .cache/check-sources.json
+          key: check-sources-${{ github.run_id }}
+          restore-keys: |
+            check-sources-
+
+      - name: Check sources for changes
+        run: npm run check-sources
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
