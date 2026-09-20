@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import yaml from "js-yaml";
+import { openIssue } from "./github-issues.js";
 
 /**
  * The ONLY auto-commit in the repo. Pulls today's rate for each currency
@@ -79,8 +80,6 @@ export function findExcessiveMoves(previous: FxData | null, next: Record<Currenc
 }
 
 async function openAlertIssue(moves: RateMove[]): Promise<void> {
-  const token = process.env.GITHUB_TOKEN;
-  const repo = process.env.GITHUB_REPOSITORY;
   const title = `[FX ALERT] ${moves.map((m) => m.currency).join(", ")} moved more than ${MOVE_THRESHOLD_PCT}% -- fx.yaml NOT updated`;
   const body = [
     `The daily FX fetch found a move of more than ${MOVE_THRESHOLD_PCT}% since the last committed rate.`,
@@ -92,26 +91,7 @@ async function openAlertIssue(moves: RateMove[]): Promise<void> {
     "",
     `Source: ${API_URL}`,
   ].join("\n");
-
-  if (!token || !repo) {
-    console.error("GITHUB_TOKEN/GITHUB_REPOSITORY not set -- printing the alert instead of opening an issue:\n");
-    console.error(title);
-    console.error(body);
-    return;
-  }
-
-  const res = await fetch(`https://api.github.com/repos/${repo}/issues`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: "application/vnd.github+json",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ title, body, labels: ["fx-alert"] }),
-  });
-  if (!res.ok) {
-    console.error(`Failed to open GitHub issue: ${res.status} ${await res.text()}`);
-  }
+  await openIssue(title, body, ["fx-alert"]);
 }
 
 export function writeFx(fx: FxData): void {

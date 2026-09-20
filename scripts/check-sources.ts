@@ -3,6 +3,7 @@ import path from "node:path";
 import crypto from "node:crypto";
 import { parse as parseHtml } from "node-html-parser";
 import { loadSources, type Source } from "./resolve.js";
+import { openIssue } from "./github-issues.js";
 
 /**
  * For each check_method: "hash" source, fetches the India-facing version of
@@ -174,24 +175,6 @@ async function fetchWithRetry(url: string, retries = RETRY_COUNT): Promise<Respo
   throw new Error("unreachable");
 }
 
-async function openIssue(title: string, body: string): Promise<void> {
-  const token = process.env.GITHUB_TOKEN;
-  const repo = process.env.GITHUB_REPOSITORY;
-  if (!token || !repo) {
-    console.error(`GITHUB_TOKEN/GITHUB_REPOSITORY not set -- printing instead of opening an issue:\n${title}\n${body}`);
-    return;
-  }
-  const res = await fetch(`https://api.github.com/repos/${repo}/issues`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: "application/vnd.github+json",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ title, body }),
-  });
-  if (!res.ok) console.error(`Failed to open issue: ${res.status} ${await res.text()}`);
-}
 
 async function checkOneSource(source: Source, cache: Cache): Promise<void> {
   const url = new URL(source.url);
