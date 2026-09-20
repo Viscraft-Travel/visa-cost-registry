@@ -77,6 +77,10 @@
             "required": ["basis"]
           },
           "then": {
+            "properties": {
+              "family_cap_amount": { "not": { "type": "null" } },
+              "family_max_persons": { "not": { "type": "null" } }
+            },
             "required": ["family_cap_amount", "family_max_persons"]
           }
         },
