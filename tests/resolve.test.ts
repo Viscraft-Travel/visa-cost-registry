@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   mergeFee,
+  mergeRequirements,
   resolveDestination,
   resolveFeeAmount,
   applyFamilyCap,
@@ -164,11 +165,35 @@ describe("resolveFeeAmount -- unresolved vs contradiction", () => {
   });
 });
 
+describe("mergeRequirements", () => {
+  it("a null destination field inherits the ruleset's value", () => {
+    const merged = mergeRequirements(
+      { insurance_required: null, insurance_min_cover: null, insurance_currency: null },
+      { insurance_required: true, insurance_min_cover: 30000, insurance_currency: "EUR" }
+    );
+    expect(merged).toEqual({ insurance_required: true, insurance_min_cover: 30000, insurance_currency: "EUR" });
+  });
+
+  it("a non-null destination field overrides the ruleset's value", () => {
+    const merged = mergeRequirements(
+      { insurance_required: false },
+      { insurance_required: true }
+    );
+    expect(merged.insurance_required).toBe(false);
+  });
+
+  it("with no ruleset requirements at all, the destination's own values pass through", () => {
+    const merged = mergeRequirements({ insurance_required: null }, undefined);
+    expect(merged).toEqual({ insurance_required: null });
+  });
+});
+
 describe("mergeFee / resolveDestination -- ruleset inheritance", () => {
   const ruleset: Ruleset = {
     id: "test-ruleset",
     corridor: "test",
     meta: { last_reviewed: null, reviewed_by: null },
+    requirements: { insurance_required: true, insurance_min_cover: 30000, insurance_currency: "EUR" },
     fees: [
       baseFee({ id: "consular_fee_adult", label: "Consular fee", amount: 90, currency: "EUR", collection_basis: "official_inr", collected_currency: "INR" }),
       baseFee({ id: "untouched_fee", label: "Untouched fee", amount: 10, currency: "EUR" }),
@@ -194,7 +219,7 @@ describe("mergeFee / resolveDestination -- ruleset inheritance", () => {
       application: {},
       fees: [{ id: "consular_fee_adult", collected_amount: 8300 }],
       timing: {},
-      requirements: {},
+      requirements: { insurance_required: null, insurance_min_cover: null, insurance_currency: null },
       outcome: {},
       meta: { last_reviewed: null, reviewed_by: null, change_log: [] },
     };
@@ -206,6 +231,7 @@ describe("mergeFee / resolveDestination -- ruleset inheritance", () => {
     expect(byId.get("consular_fee_adult").amount).toBe(90); // inherited
     expect(byId.get("untouched_fee")).toBeDefined(); // inherited wholesale, destination never mentioned it
     expect(byId.get("untouched_fee").amount).toBe(10);
+    expect(resolved.requirements.insurance_required).toBe(true); // inherited from the ruleset
   });
 
   it("a destination with no ruleset (standalone) resolves to itself unchanged", () => {

@@ -126,6 +126,26 @@ export function mergeFee(rulesetFee: Fee | undefined, destinationFee: FeeFragmen
  * appear (inherited wholesale), and fees present in both are merged field
  * by field with the destination's fields winning.
  */
+/**
+ * Merges a destination's requirements against its ruleset's, field by
+ * field: a null in the destination means "not specified here, inherit the
+ * ruleset's value"; a non-null value is an explicit override. This lets a
+ * destination declare requirements: { insurance_required: null, ... } and
+ * still resolve to the ruleset's shared insurance rule, instead of every
+ * destination file having to restate it.
+ */
+export function mergeRequirements(
+  destinationRequirements: Record<string, unknown>,
+  rulesetRequirements: Record<string, unknown> | undefined
+): Record<string, unknown> {
+  if (!rulesetRequirements) return destinationRequirements;
+  const merged = { ...destinationRequirements };
+  for (const [key, value] of Object.entries(rulesetRequirements)) {
+    if (merged[key] === null || merged[key] === undefined) merged[key] = value;
+  }
+  return merged;
+}
+
 export function resolveDestination(destination: Destination, ruleset: Ruleset | null): ResolvedDestination {
   if (!ruleset) {
     // Standalone destinations have no ruleset to inherit from, so their
@@ -142,7 +162,11 @@ export function resolveDestination(destination: Destination, ruleset: Ruleset | 
     if (!destinationFeeIds.has(id)) mergedFees.push(fee);
   }
 
-  return { ...destination, fees: mergedFees };
+  return {
+    ...destination,
+    fees: mergedFees,
+    requirements: mergeRequirements(destination.requirements, ruleset.requirements),
+  };
 }
 
 function daysSince(dateStr: string | null | undefined, now: Date): number | null {

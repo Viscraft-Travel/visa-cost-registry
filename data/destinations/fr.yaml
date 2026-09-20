@@ -100,9 +100,12 @@ timing:
   peak_months: []
 
 requirements:
-  insurance_required: true
-  insurance_min_cover: 30000
-  insurance_currency: EUR
+  # insurance_* left null -- inherited from data/rulesets/schengen.yaml by
+  # resolveDestination()'s requirements merge (null here means "not
+  # overridden," not "not required").
+  insurance_required: null
+  insurance_min_cover: null
+  insurance_currency: null
   itinerary_required: null
   accommodation_required: null
   flight_reservation_required: null
