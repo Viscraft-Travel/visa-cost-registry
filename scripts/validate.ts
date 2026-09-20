@@ -55,14 +55,20 @@ async function main() {
 
   const destinationSchema = loadSchema("destination.schema.json");
   const rulesetSchema = loadSchema("ruleset.schema.json");
+  const fxSchema = loadSchema("fx.schema.json");
   const validateDestination = ajv.compile(destinationSchema);
   const validateRuleset = ajv.compile(rulesetSchema);
+  const validateFx = ajv.compile(fxSchema);
 
   const errors: ValidationError[] = [];
   const today = new Date();
   const fx = loadFx();
   if (!fx) {
     console.warn("[validate] data/fx.yaml not found yet -- skipping currency-in-fx.yaml checks.");
+  } else if (!validateFx(fx)) {
+    for (const e of validateFx.errors ?? []) {
+      errors.push({ file: "data/fx.yaml", message: `${e.instancePath || "/"} ${e.message}` });
+    }
   }
 
   // 1. Load and schema-validate every ruleset.

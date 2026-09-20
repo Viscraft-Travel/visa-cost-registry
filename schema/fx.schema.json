@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Viscraft-Travel/visa-cost-registry/schema/fx.schema.json",
+  "title": "FX rates",
+  "description": "Auto-updated daily by scripts/fetch-fx.ts -- the only file in the repo an automation is allowed to commit on its own. Rates are INR per one unit of the foreign currency.",
+  "type": "object",
+  "required": ["base", "fetched_at", "as_of", "source", "rates"],
+  "additionalProperties": false,
+  "properties": {
+    "base": { "const": "INR" },
+    "fetched_at": { "type": "string", "format": "date-time" },
+    "as_of": { "type": "string", "format": "date" },
+    "source": { "type": "string", "format": "uri" },
+    "rates": {
+      "type": "object",
+      "required": ["EUR", "GBP", "USD", "CAD", "AUD", "NZD", "CNY", "JPY"],
+      "additionalProperties": false,
+      "properties": {
+        "EUR": { "type": "number", "exclusiveMinimum": 0 },
+        "GBP": { "type": "number", "exclusiveMinimum": 0 },
+        "USD": { "type": "number", "exclusiveMinimum": 0 },
+        "CAD": { "type": "number", "exclusiveMinimum": 0 },
+        "AUD": { "type": "number", "exclusiveMinimum": 0 },
+        "NZD": { "type": "number", "exclusiveMinimum": 0 },
+        "CNY": { "type": "number", "exclusiveMinimum": 0 },
+        "JPY": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    }
+  }
+}

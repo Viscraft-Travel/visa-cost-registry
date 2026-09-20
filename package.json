@@ -5,7 +5,8 @@
   "scripts": {
     "validate": "tsx scripts/validate.ts",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "fetch-fx": "tsx scripts/fetch-fx.ts"
   },
   "dependencies": {
     "ajv": "^8.17.1",
