@@ -1,13 +1,13 @@
 base: INR
-fetched_at: '2026-11-06T07:08:09.180Z'
-as_of: '2026-11-05'
+fetched_at: '2026-11-07T06:20:01.456Z'
+as_of: '2026-11-06'
 source: https://api.frankfurter.dev/v1/latest
 rates:
-  EUR: 106.04
-  GBP: 127.1569
-  USD: 94.4733
-  CAD: 67.6498
-  AUD: 66.1376
-  NZD: 53.1096
-  CNY: 14.1677
-  JPY: 0.5962
+  EUR: 104.8603
+  GBP: 125.7087
+  USD: 93.9144
+  CAD: 66.769
+  AUD: 64.5286
+  NZD: 52.0616
+  CNY: 14.078
+  JPY: 0.5932
